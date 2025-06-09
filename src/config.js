@@ -38,6 +38,9 @@ const context = {
 	PREBUILT: core.getBooleanInput('PREBUILT', { required: false }),
 	RUNNING_LOCAL: process.env.RUNNING_LOCAL === 'true',
 	FORCE: core.getBooleanInput('FORCE', { required: false }),
+	TARGET_DEPLOYMENT_ENVIRONMENT: core.getInput('TARGET_DEPLOYMENT_ENVIRONMENT', {
+		required: false,
+	}),
 }
 
 const setDynamicVars = () => {
