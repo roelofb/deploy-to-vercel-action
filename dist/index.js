@@ -31859,6 +31859,7 @@ const {
 	WORKING_DIRECTORY,
 	FORCE,
 	GITHUB_DEPLOYMENT_ENV,
+	TARGET_DEPLOYMENT_ENVIRONMENT
 } = __nccwpck_require__(5192)
 
 let VERCEL_SCOPE = importedVercelScope
@@ -31888,6 +31889,10 @@ const init = () => {
 
 		if (PRODUCTION) {
 			commandArguments.push('--prod')
+		}
+
+		if (TARGET_DEPLOYMENT_ENVIRONMENT) {
+			commandArguments.push(`--target=${TARGET_DEPLOYMENT_ENVIRONMENT}`)
 		}
 
 		if (PREBUILT) {
