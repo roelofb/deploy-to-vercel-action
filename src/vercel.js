@@ -17,6 +17,7 @@ const {
 	WORKING_DIRECTORY,
 	FORCE,
 	GITHUB_DEPLOYMENT_ENV,
+	TARGET_DEPLOYMENT_ENVIRONMENT
 } = require('./config')
 
 let VERCEL_SCOPE = importedVercelScope
@@ -46,6 +47,10 @@ const init = () => {
 
 		if (PRODUCTION) {
 			commandArguments.push('--prod')
+		}
+
+		if (TARGET_DEPLOYMENT_ENVIRONMENT) {
+			commandArguments.push(`--target=${TARGET_DEPLOYMENT_ENVIRONMENT}`)
 		}
 
 		if (PREBUILT) {

@@ -96,6 +96,11 @@ inputs:
       Used to skip the build cache.
     required: false
     default: 'false'
+  TARGET_DEPLOYMENT_ENVIRONMENT:
+    description: |
+      Target deployment environment.
+    required: false
+    default: 'Production'
 
 outputs:
   PREVIEW_URL:
