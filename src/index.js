@@ -53,6 +53,10 @@ const run = async () => {
 		core.info(`Deployment #${ghDeployment.id} status changed to "pending" ⌛`)
 	}
 
+	// Create pending commit status
+	await github.createCommitStatus('pending', 'Deployment in progress...')
+	core.info('Commit status set to "pending" ⌛')
+
 	try {
 		if (RUNTIME_ENV.length) {
 			core.info('Setting environment variables on Vercel ▲')
@@ -165,6 +169,15 @@ const run = async () => {
 			await github.updateDeployment('success', deploymentURLs.preview)
 		}
 
+		// Create success commit status
+		const statusUrl = deploymentURLs.preview || deploymentURLs.unique
+		await github.createCommitStatus(
+			'success',
+			'Deployment successful',
+			statusUrl
+		)
+		core.info('Commit status set to "success" ✔︎')
+
 		if (IS_PR) {
 			if (DELETE_EXISTING_COMMENT) {
 				core.info('Checking for existing comment on PR 🔎')
@@ -237,6 +250,7 @@ const run = async () => {
 		core.info('Done ✅')
 	} catch (err) {
 		await github.updateDeployment('failure')
+		await github.createCommitStatus('failure', 'Deployment failed')
 		core.error(`Catch Error: ${err}`)
 		core.setFailed(err.message)
 	}

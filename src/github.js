@@ -7,9 +7,12 @@ const {
 	PRODUCTION,
 	PR_NUMBER,
 	REF,
+	SHA,
 	LOG_URL,
 	PR_LABELS,
 	GITHUB_DEPLOYMENT_ENV,
+	CREATE_COMMIT_STATUS,
+	COMMIT_STATUS_CONTEXT,
 } = require('./config')
 
 const init = () => {
@@ -112,6 +115,26 @@ const init = () => {
 		}
 	}
 
+	const createCommitStatus = async (state, description, targetUrl) => {
+		if (!CREATE_COMMIT_STATUS) return
+
+		const statusData = {
+			owner: USER,
+			repo: REPOSITORY,
+			sha: SHA,
+			state: state,
+			context: COMMIT_STATUS_CONTEXT,
+			description: description,
+		}
+
+		if (targetUrl) {
+			statusData.target_url = targetUrl
+		}
+
+		const { data } = await client.repos.createCommitStatus(statusData)
+		return data
+	}
+
 	return {
 		client,
 		createDeployment,
@@ -120,6 +143,7 @@ const init = () => {
 		createComment,
 		addLabel,
 		getCommit,
+		createCommitStatus,
 	}
 }
 

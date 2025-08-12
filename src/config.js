@@ -38,9 +38,22 @@ const context = {
 	PREBUILT: core.getBooleanInput('PREBUILT', { required: false }),
 	RUNNING_LOCAL: process.env.RUNNING_LOCAL === 'true',
 	FORCE: core.getBooleanInput('FORCE', { required: false }),
-	TARGET_DEPLOYMENT_ENVIRONMENT: core.getInput('TARGET_DEPLOYMENT_ENVIRONMENT', {
-		required: false,
-	}),
+	TARGET_DEPLOYMENT_ENVIRONMENT: core.getInput(
+		'TARGET_DEPLOYMENT_ENVIRONMENT',
+		{
+			required: false,
+		}
+	),
+	CREATE_COMMIT_STATUS:
+		core.getBooleanInput('CREATE_COMMIT_STATUS', {
+			required: false,
+		}) ?? true,
+	COMMIT_STATUS_CONTEXT:
+		core.getInput('COMMIT_STATUS_CONTEXT', {
+			required: false,
+		}) ||
+		process.env.GITHUB_JOB ||
+		'deploy',
 }
 
 const setDynamicVars = () => {

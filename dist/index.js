@@ -31530,9 +31530,22 @@ const context = {
 	PREBUILT: core.getBooleanInput('PREBUILT', { required: false }),
 	RUNNING_LOCAL: process.env.RUNNING_LOCAL === 'true',
 	FORCE: core.getBooleanInput('FORCE', { required: false }),
-	TARGET_DEPLOYMENT_ENVIRONMENT: core.getInput('TARGET_DEPLOYMENT_ENVIRONMENT', {
-		required: false,
-	}),
+	TARGET_DEPLOYMENT_ENVIRONMENT: core.getInput(
+		'TARGET_DEPLOYMENT_ENVIRONMENT',
+		{
+			required: false,
+		}
+	),
+	CREATE_COMMIT_STATUS:
+		core.getBooleanInput('CREATE_COMMIT_STATUS', {
+			required: false,
+		}) ?? true,
+	COMMIT_STATUS_CONTEXT:
+		core.getInput('COMMIT_STATUS_CONTEXT', {
+			required: false,
+		}) ||
+		process.env.GITHUB_JOB ||
+		'deploy',
 }
 
 const setDynamicVars = () => {
@@ -31603,9 +31616,12 @@ const {
 	PRODUCTION,
 	PR_NUMBER,
 	REF,
+	SHA,
 	LOG_URL,
 	PR_LABELS,
 	GITHUB_DEPLOYMENT_ENV,
+	CREATE_COMMIT_STATUS,
+	COMMIT_STATUS_CONTEXT,
 } = __nccwpck_require__(5192)
 
 const init = () => {
@@ -31708,6 +31724,26 @@ const init = () => {
 		}
 	}
 
+	const createCommitStatus = async (state, description, targetUrl) => {
+		if (!CREATE_COMMIT_STATUS) return
+
+		const statusData = {
+			owner: USER,
+			repo: REPOSITORY,
+			sha: SHA,
+			state: state,
+			context: COMMIT_STATUS_CONTEXT,
+			description: description,
+		}
+
+		if (targetUrl) {
+			statusData.target_url = targetUrl
+		}
+
+		const { data } = await client.repos.createCommitStatus(statusData)
+		return data
+	}
+
 	return {
 		client,
 		createDeployment,
@@ -31716,6 +31752,7 @@ const init = () => {
 		createComment,
 		addLabel,
 		getCommit,
+		createCommitStatus,
 	}
 }
 
@@ -31862,7 +31899,7 @@ const {
 	WORKING_DIRECTORY,
 	FORCE,
 	GITHUB_DEPLOYMENT_ENV,
-	TARGET_DEPLOYMENT_ENVIRONMENT
+	TARGET_DEPLOYMENT_ENVIRONMENT,
 } = __nccwpck_require__(5192)
 
 let VERCEL_SCOPE = importedVercelScope
@@ -32124,6 +32161,10 @@ const run = async () => {
 		core.info(`Deployment #${ghDeployment.id} status changed to "pending" ⌛`)
 	}
 
+	// Create pending commit status
+	await github.createCommitStatus('pending', 'Deployment in progress...')
+	core.info('Commit status set to "pending" ⌛')
+
 	try {
 		if (RUNTIME_ENV.length) {
 			core.info('Setting environment variables on Vercel ▲')
@@ -32236,6 +32277,15 @@ const run = async () => {
 			await github.updateDeployment('success', deploymentURLs.preview)
 		}
 
+		// Create success commit status
+		const statusUrl = deploymentURLs.preview || deploymentURLs.unique
+		await github.createCommitStatus(
+			'success',
+			'Deployment successful',
+			statusUrl
+		)
+		core.info('Commit status set to "success" ✔︎')
+
 		if (IS_PR) {
 			if (DELETE_EXISTING_COMMENT) {
 				core.info('Checking for existing comment on PR 🔎')
@@ -32308,6 +32358,7 @@ const run = async () => {
 		core.info('Done ✅')
 	} catch (err) {
 		await github.updateDeployment('failure')
+		await github.createCommitStatus('failure', 'Deployment failed')
 		core.error(`Catch Error: ${err}`)
 		core.setFailed(err.message)
 	}

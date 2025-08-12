@@ -31,6 +31,7 @@ uses: mountainash/deploy-to-vercel-action@65a8b653a<< replace with latest commit
 - [x] More emojis in logs 📝
 - [x] Better accessibility formatting for comment table
 - [x] FEATURE ✨ Transfer runtime secrets/envars from GHAction to Vercel Settings
+- [x] FEATURE ✨ Create commit status checks for branch protection/ruleset compatibility
 - [ ] FEATURE ✨ Build within action (not just PREBUILT)
 - [ ] FEATURE ✨ Project changed from ESlint to Biome
 
@@ -116,6 +117,8 @@ Here are all the inputs [deploy-to-vercel-action](https://github.com/mountainash
 | `VERCEL_PROJECT_ID` | ID of your Vercel project (more info [below](#vercel-project)) | **Yes** | N/A |
 | `GITHUB_DEPLOYMENT` | Create a deployment on GitHub | **No** | true |
 | `GITHUB_DEPLOYMENT_ENV` | Custom environment for the GitHub deployment | **No** | `Production` or `Preview` |
+| `CREATE_COMMIT_STATUS` | Create a commit status check for branch protection compatibility | **No** | true |
+| `COMMIT_STATUS_CONTEXT` | Override the commit status context name (defaults to the GitHub Actions job name) | **No** | `$GITHUB_JOB` or `deploy` |
 | `PRODUCTION` | Create a production deployment on Vercel and GitHub | **No** | true (false for PR deployments) |
 | `DELETE_EXISTING_COMMENT` | Delete existing PR comment when redeploying PR | **No** | true |
 | `CREATE_COMMENT` | Create PR comment when deploying | **No** | true |
@@ -153,6 +156,38 @@ Once set up, a new `.vercel` directory will be added to your directory. The `.ve
 You can then specify them as `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` in the Actions inputs.
 
 > **NOTE:** It is recommended to set them as [Repository Secrets](https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository).
+
+### Commit Status Checks (Branch Protection & Rulesets)
+
+This action creates commit status checks by default, making it compatible with GitHub branch protection rules and rulesets. The status check name will automatically match your job name:
+
+```yml
+jobs:
+  deploy:  # This job name becomes the commit status context
+    steps:
+      - uses: roelofb/deploy-to-vercel-action@main
+        with:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          # Commit status is created automatically!
+```
+
+This allows you to use the `deploy` status check in your branch protection rules or rulesets to ensure deployments succeed before merging.
+
+To use a custom status check name:
+
+```yml
+- uses: roelofb/deploy-to-vercel-action@main
+  with:
+    COMMIT_STATUS_CONTEXT: 'vercel-preview'  # Custom status name
+```
+
+To disable commit status creation (not recommended):
+
+```yml
+- uses: roelofb/deploy-to-vercel-action@main
+  with:
+    CREATE_COMMIT_STATUS: false
+```
 
 ### Custom Domains
 

@@ -101,6 +101,15 @@ inputs:
       Target deployment environment.
     required: false
     default: 'Production'
+  CREATE_COMMIT_STATUS:
+    description: |
+      Create a commit status check for branch protection compatibility (default: true).
+    required: false
+    default: 'true'
+  COMMIT_STATUS_CONTEXT:
+    description: |
+      Override the commit status context name. Defaults to the GitHub Actions job name.
+    required: false
 
 outputs:
   PREVIEW_URL:
