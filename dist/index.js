@@ -31546,6 +31546,8 @@ const context = {
 		}) ||
 		process.env.GITHUB_JOB ||
 		'deploy',
+	PACKAGE_MANAGER:
+		core.getInput('PACKAGE_MANAGER', { required: false }) || 'npm',
 }
 
 const setDynamicVars = () => {
@@ -31900,7 +31902,11 @@ const {
 	FORCE,
 	GITHUB_DEPLOYMENT_ENV,
 	TARGET_DEPLOYMENT_ENVIRONMENT,
+	PACKAGE_MANAGER,
 } = __nccwpck_require__(5192)
+
+const vercelCommand =
+	PACKAGE_MANAGER === 'bun' ? 'bunx vercel@latest' : 'npx vercel@latest'
 
 let VERCEL_SCOPE = importedVercelScope
 
@@ -31948,7 +31954,11 @@ const init = () => {
 			const metadata = [
 				`githubCommitAuthorName=${commit.authorName}`,
 				`githubCommitAuthorLogin=${commit.authorLogin}`,
-				`githubCommitMessage=${TRIM_COMMIT_MESSAGE ? commit.commitMessage.split(/\r?\n/)[0] : commit.commitMessage}`,
+				`githubCommitMessage=${
+					TRIM_COMMIT_MESSAGE
+						? commit.commitMessage.split(/\r?\n/)[0]
+						: commit.commitMessage
+				}`,
 				`githubCommitOrg=${USER}`,
 				`githubCommitRepo=${REPOSITORY}`,
 				`githubCommitRef=${BRANCH}`,
@@ -31971,7 +31981,7 @@ const init = () => {
 
 		core.info('Starting deploy with Vercel ▲ CLI')
 		const output = await execCmd(
-			'npx vercel',
+			vercelCommand,
 			commandArguments,
 			WORKING_DIRECTORY
 		)
@@ -31998,7 +32008,7 @@ const init = () => {
 			commandArguments.push(`--scope=${VERCEL_SCOPE}`)
 		}
 
-		return await execCmd('npx vercel', commandArguments, WORKING_DIRECTORY)
+		return await execCmd(vercelCommand, commandArguments, WORKING_DIRECTORY)
 	}
 
 	const getDeployment = async () => {

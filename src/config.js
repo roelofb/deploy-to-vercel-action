@@ -54,6 +54,8 @@ const context = {
 		}) ||
 		process.env.GITHUB_JOB ||
 		'deploy',
+	PACKAGE_MANAGER:
+		core.getInput('PACKAGE_MANAGER', { required: false }) || 'npm',
 }
 
 const setDynamicVars = () => {

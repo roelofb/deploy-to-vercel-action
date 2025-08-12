@@ -61,6 +61,7 @@ Deploy your project to Vercel using GitHub Actions. Supports PR previews and Git
 - Create a deployment on GitHub
 - Assign custom dynamic domains to each deployment or pr
 - Can deploy Dependabot PRs and optionally even PRs made from forks
+- Support for multiple package managers (npm, Bun) for Vercel CLI commands
 
 ## 📚 Usage
 
@@ -109,31 +110,32 @@ With the `v2` tag you will always get the latest non-breaking version which will
 
 Here are all the inputs [deploy-to-vercel-action](https://github.com/mountainash/deploy-to-vercel-action) takes:
 
-| Key | Value | Required | Default |
-| ------------- | ------------- | ------------- | ------------- |
-| `GITHUB_TOKEN` | GitHub Token to use when creating deployment and comment (more info [below](#tokens)) | **Yes** | N/A |
-| `VERCEL_TOKEN` | Vercel Token to use with the Vercel CLI (more info [below](#tokens)) | **Yes** | N/A |
-| `VERCEL_ORG_ID` | ID of your Vercel Organisation (more info [below](#vercel-project)) | **Yes** | N/A |
-| `VERCEL_PROJECT_ID` | ID of your Vercel project (more info [below](#vercel-project)) | **Yes** | N/A |
-| `GITHUB_DEPLOYMENT` | Create a deployment on GitHub | **No** | true |
-| `GITHUB_DEPLOYMENT_ENV` | Custom environment for the GitHub deployment | **No** | `Production` or `Preview` |
-| `CREATE_COMMIT_STATUS` | Create a commit status check for branch protection compatibility | **No** | true |
-| `COMMIT_STATUS_CONTEXT` | Override the commit status context name (defaults to the GitHub Actions job name) | **No** | `$GITHUB_JOB` or `deploy` |
-| `PRODUCTION` | Create a production deployment on Vercel and GitHub | **No** | true (false for PR deployments) |
-| `DELETE_EXISTING_COMMENT` | Delete existing PR comment when redeploying PR | **No** | true |
-| `CREATE_COMMENT` | Create PR comment when deploying | **No** | true |
-| `ATTACH_COMMIT_METADATA` | Attach metadata about the commit to the Vercel deployment | **No** | true |
-| `TRIM_COMMIT_MESSAGE` | When passing meta data to Vercel deployment, trim the commit message to subject only | **No** | false |
-| `DEPLOY_PR_FROM_FORK` | Allow PRs which originate from a fork to be deployed (more info [below](#deploying-a-pr-made-from-a-fork-or-dependabot)) | **No** | false |
-| `PR_LABELS` | Labels which will be added to the pull request once deployed. Set it to false to turn off | **No** | `deployed` |
-| `ALIAS_DOMAINS` | Alias domain(s) to assign to the deployment (more info [below](#custom-domains)) | **No** | N/A |
-| `PR_PREVIEW_DOMAIN` | Custom preview domain for PRs (more info [below](#custom-domains)) | **No** | N/A |
-| `VERCEL_SCOPE` | Execute commands from a different Vercel team or user. The value from `VERCEL_ORG_ID` is set if it's not overridden with `VERCEL_SCOPE`  | **No** | `VERCEL_ORG_ID` |
-| `BUILD_ENV` | Provide environment variables to the build step | **No** | N/A |
-| `RUNTIME_ENV` | 🆕 Push environment variables to the Vercel deployment environment (more info [below](#runtime-envvars)) | **No** | N/A |
-| `WORKING_DIRECTORY` | Working directory for the Vercel CLI | **No** | N/A |
-| `FORCE` | Used to skip the build cache | **No** | false |
-| `PREBUILT` | Deploy a prebuilt Vercel Project | **No** | false |
+| Key                       | Value                                                                                                                                   | Required | Default                         |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------- |
+| `GITHUB_TOKEN`            | GitHub Token to use when creating deployment and comment (more info [below](#tokens))                                                   | **Yes**  | N/A                             |
+| `VERCEL_TOKEN`            | Vercel Token to use with the Vercel CLI (more info [below](#tokens))                                                                    | **Yes**  | N/A                             |
+| `VERCEL_ORG_ID`           | ID of your Vercel Organisation (more info [below](#vercel-project))                                                                     | **Yes**  | N/A                             |
+| `VERCEL_PROJECT_ID`       | ID of your Vercel project (more info [below](#vercel-project))                                                                          | **Yes**  | N/A                             |
+| `GITHUB_DEPLOYMENT`       | Create a deployment on GitHub                                                                                                           | **No**   | true                            |
+| `GITHUB_DEPLOYMENT_ENV`   | Custom environment for the GitHub deployment                                                                                            | **No**   | `Production` or `Preview`       |
+| `CREATE_COMMIT_STATUS`    | Create a commit status check for branch protection compatibility                                                                        | **No**   | true                            |
+| `COMMIT_STATUS_CONTEXT`   | Override the commit status context name (defaults to the GitHub Actions job name)                                                       | **No**   | `$GITHUB_JOB` or `deploy`       |
+| `PRODUCTION`              | Create a production deployment on Vercel and GitHub                                                                                     | **No**   | true (false for PR deployments) |
+| `DELETE_EXISTING_COMMENT` | Delete existing PR comment when redeploying PR                                                                                          | **No**   | true                            |
+| `CREATE_COMMENT`          | Create PR comment when deploying                                                                                                        | **No**   | true                            |
+| `ATTACH_COMMIT_METADATA`  | Attach metadata about the commit to the Vercel deployment                                                                               | **No**   | true                            |
+| `TRIM_COMMIT_MESSAGE`     | When passing meta data to Vercel deployment, trim the commit message to subject only                                                    | **No**   | false                           |
+| `DEPLOY_PR_FROM_FORK`     | Allow PRs which originate from a fork to be deployed (more info [below](#deploying-a-pr-made-from-a-fork-or-dependabot))                | **No**   | false                           |
+| `PR_LABELS`               | Labels which will be added to the pull request once deployed. Set it to false to turn off                                               | **No**   | `deployed`                      |
+| `ALIAS_DOMAINS`           | Alias domain(s) to assign to the deployment (more info [below](#custom-domains))                                                        | **No**   | N/A                             |
+| `PR_PREVIEW_DOMAIN`       | Custom preview domain for PRs (more info [below](#custom-domains))                                                                      | **No**   | N/A                             |
+| `VERCEL_SCOPE`            | Execute commands from a different Vercel team or user. The value from `VERCEL_ORG_ID` is set if it's not overridden with `VERCEL_SCOPE` | **No**   | `VERCEL_ORG_ID`                 |
+| `BUILD_ENV`               | Provide environment variables to the build step                                                                                         | **No**   | N/A                             |
+| `RUNTIME_ENV`             | 🆕 Push environment variables to the Vercel deployment environment (more info [below](#runtime-envvars))                                | **No**   | N/A                             |
+| `WORKING_DIRECTORY`       | Working directory for the Vercel CLI                                                                                                    | **No**   | N/A                             |
+| `FORCE`                   | Used to skip the build cache                                                                                                            | **No**   | false                           |
+| `PREBUILT`                | Deploy a prebuilt Vercel Project                                                                                                        | **No**   | false                           |
+| `PACKAGE_MANAGER`         | Package manager for Vercel CLI commands. Options: 'npm' (default) or 'bun'.                                                             | **No**   | npm                             |
 
 ## 🛠️ Configuration
 
@@ -163,7 +165,7 @@ This action creates commit status checks by default, making it compatible with G
 
 ```yml
 jobs:
-  deploy:  # This job name becomes the commit status context
+  deploy: # This job name becomes the commit status context
     steps:
       - uses: roelofb/deploy-to-vercel-action@main
         with:
@@ -178,7 +180,7 @@ To use a custom status check name:
 ```yml
 - uses: roelofb/deploy-to-vercel-action@main
   with:
-    COMMIT_STATUS_CONTEXT: 'vercel-preview'  # Custom status name
+    COMMIT_STATUS_CONTEXT: 'vercel-preview' # Custom status name
 ```
 
 To disable commit status creation (not recommended):
@@ -232,7 +234,7 @@ ALIAS_DOMAINS: |
 This is especially useful if you want to change the PR preview domain with the `PR_PREVIEW_DOMAIN` input:
 
 ```yml
-PR_PREVIEW_DOMAIN: "{REPO}-{PR}.vercel.app"
+PR_PREVIEW_DOMAIN: '{REPO}-{PR}.vercel.app'
 ```
 
 > **NOTE:** You can only specify one custom domain for `PR_PREVIEW_DOMAIN`
@@ -257,6 +259,27 @@ RUNTIME_ENV: |
 ```
 
 Environment variables will be set to the Vercel Preview environment, unless `PRODUCTION` is set to `true`. `GITHUB_DEPLOYMENT_ENV` will also be respected if set.
+
+### Using Different Package Managers
+
+This action supports using [Bun](https://bun.sh/) instead of Node.js for executing Vercel CLI commands. This can provide faster execution times and better performance for users who prefer Bun over Node.js.
+
+To enable Bun support, set the `PACKAGE_MANAGER` input to `'bun'`:
+
+```yml
+- uses: mountainash/deploy-to-vercel-action@develop
+  with:
+    VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+    VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    PACKAGE_MANAGER: 'bun' # Use Bun instead of Node.js
+```
+
+**Note**: This requires Bun to be available in your GitHub Actions runner. By default, GitHub Actions runners include Node.js, but you may need to install Bun if you want to use this feature.
+
+**Current implementation**: The `PACKAGE_MANAGER` setting affects both the main deployment function and the `assignAlias` function (domain aliasing).
+
+**Default behavior**: When `PACKAGE_MANAGER` is not specified or set to `'npm'`, the action will use `npx vercel` (Node.js) as before.
 
 ### Deploying a PR made from a fork or Dependabot
 
@@ -340,7 +363,7 @@ The workflow below will run on every push to the staging branch. The Action will
 ```yml
 on:
   push:
-    branches: [ staging ]
+    branches: [staging]
 jobs:
   deploy:
     runs-on: ubuntu-latest}
@@ -406,7 +429,7 @@ jobs:
           ALIAS_DOMAINS: |
             example.com
             {BRANCH}.example.com
-          PR_PREVIEW_DOMAIN: "{REPO}-{PR}.now.sh"
+          PR_PREVIEW_DOMAIN: '{REPO}-{PR}.now.sh'
 ```
 
 ### Wait for other CI jobs
@@ -495,7 +518,7 @@ The workflow below will run at the given interval and deploy your project to Ver
 ```yml
 on:
   schedule:
-    - cron:  '0 8 * * 1' # will run every Monday at 8 am
+    - cron: '0 8 * * 1' # will run every Monday at 8 am
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -580,6 +603,40 @@ jobs:
             FOO="bar"
             SOME_TOKEN="${{ secrets.SOME_TOKEN }}"
 ```
+
+### Using Bun for faster deployments
+
+To use Bun instead of Node.js for Vercel CLI commands, set the `PACKAGE_MANAGER` input to `'bun'`. This can provide faster execution times and better performance:
+
+```yml
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Deploy to Vercel Action
+        uses: mountainash/deploy-to-vercel-action@develop
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          PACKAGE_MANAGER: 'bun' # Use Bun instead of Node.js
+```
+
+**Note**: This example includes the `oven-sh/setup-bun@v1` action to ensure Bun is available in the runner. If you're using a runner that already has Bun installed, you can omit this step.
+
+**Implementation note**: The `PACKAGE_MANAGER` setting affects both the main deployment function and domain aliasing operations.
 
 If you have an idea for another use case, [create a discussion](https://github.com/BetaHuhn/deploy-to-vercel-action/discussions/new?category=show-and-tell) and maybe I will add it here!
 

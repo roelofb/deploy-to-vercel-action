@@ -110,6 +110,11 @@ inputs:
     description: |
       Override the commit status context name. Defaults to the GitHub Actions job name.
     required: false
+  PACKAGE_MANAGER:
+    description: |
+      Package manager for Vercel CLI commands. Options: 'npm' (default) or 'bun'.
+    required: false
+    default: 'npm'
 
 outputs:
   PREVIEW_URL:
